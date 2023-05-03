@@ -1,0 +1,27 @@
+@using GameApi.Models
+
+<Collapse>
+    @foreach (var scoreGame in ScoresToShow)
+    {
+        <Panel Header="@scoreGame.Key">
+            <Collapse>
+                @foreach (var scoreLevel in scoreGame
+                    .AsEnumerable()
+                    .GroupBy(x => x.Level)
+                    .OrderBy(x => x.Key))
+                {
+                    <Panel Header="@scoreLevel.Key">
+                        <Table TItem="Score" DataSource="scoreLevel.AsEnumerable()">
+                            <PropertyColumn Property="context => context.Result"></PropertyColumn>
+                        </Table>
+                    </Panel>
+                }
+            </Collapse>
+        </Panel>
+    }
+</Collapse>
+
+@code {
+    [Parameter]
+    public IGrouping<string?, Score>[]? ScoresToShow { get; set; }
+}

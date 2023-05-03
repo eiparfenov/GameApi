@@ -1,0 +1,35 @@
+@page "/Account/Register"
+@model GameApi.Pages.Account.Register
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+<div>
+    <h1>Register</h1>
+
+    <form method="post">
+        <div>
+            <label for="login">Login:</label>
+            <input type="text" id="login" name="Login" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="Password" required>
+        </div>
+        <div>
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="ConfirmPassword" required>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+<PageTitle>GameApi</PageTitle>
+
+<Layout>
+    <Header>
+        <Menu Theme="MenuTheme.Dark" Mode="MenuMode.Horizontal" DefaultSelectedKeys=@(new[]{"2"})>
+            <MenuItem Key="1" OnClick='() => NavigationManager.NavigateTo("/")'>Home</MenuItem>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <MenuItem Key="6" OnClick='() => NavigationManager.NavigateTo("/Admin")'>Admin</MenuItem>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="Player">
+                <Authorized>
+                    <MenuItem Key="4" OnClick='() => NavigationManager.NavigateTo("/User")'>User</MenuItem>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView>
+                <Authorized>
+                    <MenuItem Key="7" OnClick='() => NavigationManager.NavigateTo("/Account/logout", true)'>Log out</MenuItem>
+                </Authorized>
+                <NotAuthorized>
+                    <MenuItem Key="8" OnClick='() => NavigationManager.NavigateTo("/Account/login", true)'>Log in</MenuItem>
+                </NotAuthorized>
+            </AuthorizeView>
+        </Menu>
+    </Header>
+    <Content Style="padding: 0 50px;">
+        <div class="site-layout-content">
+            @Body
+        </div>
+    </Content>
+    <Footer Style="text-align: center; ">Ant Design ©2018 Created by Ant UED</Footer>
+</Layout>
+<style>
+    .site-layout-content {
+        background: #fff;
+        padding: 24px;
+        min-height: 280px;
+    }
+</style>

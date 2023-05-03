@@ -1,0 +1,61 @@
+@page "/User"
+@using GameApi.Models
+@using GameApi.Data
+@using GameApi.Components
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Db;
+
+
+<AuthorizeView>
+    <Authorized Context="user">
+        <PageHeader Title="@user.User.Claims.First(x => x.Type == ClaimTypes.Name).Value"></PageHeader>
+        <Paragraph>Status</Paragraph>
+        <Input TValue="string" @bind-Value="Status"/>
+        <Button OnClick="ChangeStatus">Изменить</Button>
+        <PlayerResultDisplay ScoresToShow="ScoresToShow"></PlayerResultDisplay>
+    </Authorized>
+    <NotAuthorized>
+        <Paragraph>Вы не авторизованы, авторизуйтесь!</Paragraph>
+        <Button OnClick='() => NavigationManager.NavigateTo("Account/Login")'>Авторизоваться</Button>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public string? Status { get; set; }
+    public IGrouping<string?, Score>[]? ScoresToShow { get; set; }
+    protected override async void OnInitialized()
+    {
+        var player = await GetPlayer();
+        if(player == null) return;
+        var scores = Db.Scores.Include(x => x.Game)
+            .Where(x => x.PlayerId == player.Id)
+            .OrderBy(x => x.Result)
+            .GroupBy(x => x.Game.Name)
+            .ToArray();
+        ScoresToShow = scores;
+        ScoresToShow ??= Array.Empty<IGrouping<string, Score>>();
+        Status = player.Status;
+    }
+
+    public async Task<Player?> GetPlayer()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (!state.User.Identity.IsAuthenticated)
+            return null;
+        var login = state.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name).Value;
+        var player = await Db.Players.FirstOrDefaultAsync(x => x.Login == login);
+        return player;
+    }
+
+    public async Task ChangeStatus()
+    {
+        var player = await GetPlayer();
+        if(player == null) return;
+        player.Status = Status;
+        await Db.SaveChangesAsync();
+    }
+    
+}

@@ -1,0 +1,10 @@
+@page "/"
+@using GameApi.Data
+@inject ApplicationDbContext ApplicationDbContext
+@inject NavigationManager NavigationManager
+<PageHeader Title="Home"></PageHeader>
+@foreach (var company in ApplicationDbContext.Companies)
+{
+    var companyName = company.Name;
+    <a @onclick='() => NavigationManager.NavigateTo($"Score/{companyName}")'>@companyName</a>
+}

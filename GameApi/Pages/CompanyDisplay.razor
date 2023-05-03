@@ -1,0 +1,35 @@
+@page "/Score/{CompanyName}"
+@using GameApi.Models
+@using GameApi.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext ApplicationDbContext
+@inject NavigationManager NavigationManager
+
+
+<PageHeader Title="@CompanyName"></PageHeader>
+<Space>
+    @foreach (var game in ApplicationDbContext.Games.Where(g => g.CompanyId == Company.Id))
+    {
+        <SpaceItem>
+            <a @onclick='() => NavigationManager.NavigateTo($"Score/{CompanyName}/{game.Name}")'>@game.Name</a>
+            <Table
+                DataSource="ApplicationDbContext.Scores.Include(score => score.Player).Where(score => score.GameId == game.Id).OrderByDescending(score => score.Result)"
+                TItem="Score">
+                <PropertyColumn Property="context => context.Result"/>
+                <PropertyColumn Property="context => context.Player.Login"/>
+                <PropertyColumn Property="context => context.Player.Status"/>
+            </Table>
+        </SpaceItem>
+    }
+</Space>
+@code {
+    [Parameter]
+    public string CompanyName { get; set; }
+    public Company Company { get; set; }
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        Company = await ApplicationDbContext.Companies.FirstAsync(c => c.Name == CompanyName);
+    }
+}

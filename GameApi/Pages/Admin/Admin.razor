@@ -1,0 +1,37 @@
+@page "/admin"
+@using GameApi.Components
+@using GameApi.Models
+
+@inject NavigationManager NavigationManager
+<PageHeader Title="Admin"></PageHeader>
+
+<AuthorizeView Roles="Admin,Player">
+    <Authorized Context="user">
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <Collapse>
+                    <AdminTable TItem="@Player" GetDbSet="context => context.Players" Key="1"/>
+                    <AdminTable TItem="@Game" GetDbSet="context => context.Games" Key="2"/>
+                    <AdminTable TItem="@Company" GetDbSet="context => context.Companies" Key="3"/>
+                    <AdminTable TItem="@Score" GetDbSet="context => context.Scores" Key="4"/>
+                    <AdminTable TItem="@GameAuthToken" GetDbSet="context => context.GameAuthTokens" Key="5"/>
+                </Collapse>
+            </Authorized>
+            <NotAuthorized>
+                You are not admin
+            </NotAuthorized>
+        </AuthorizeView>
+    </Authorized>
+    <NotAuthorized>
+        Not authorised
+        <Button OnClick="OnLoginButtonClick">Login</Button>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private void OnLoginButtonClick()
+    {
+        NavigationManager.NavigateTo("/account/login", true);
+    }
+}

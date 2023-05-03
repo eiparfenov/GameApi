@@ -1,0 +1,36 @@
+@page "/Score/{CompanyName}/{GameName}"
+@using GameApi.Data
+@using GameApi.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext ApplicationDbContext
+<PageHeader Title="@GameName"></PageHeader>
+<Space Direction="DirectionVHType.Vertical">
+    @foreach (var levelsScores in Scores)
+    {
+        <SpaceItem>
+            <Paragraph>@levelsScores.Key</Paragraph>
+            <Table TItem="Score"
+                   DataSource="levelsScores.AsEnumerable().OrderByDescending(x => x.Result)">
+                <PropertyColumn Property='context => context.Result'/>
+                <PropertyColumn Property='context => context.Player.Login'/>
+                <PropertyColumn Property='context => context.Player.Status'/>
+            </Table>
+        </SpaceItem>
+    }
+</Space>
+@code {
+    [Parameter]
+    public string CompanyName { get; set; }
+    [Parameter]
+    public string GameName { get; set; }
+    private IGrouping<string?, Score>[] Scores { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var company = await ApplicationDbContext.Companies.FirstAsync(c => c.Name == CompanyName);
+        var game = await ApplicationDbContext.Games.FirstAsync(g => g.CompanyId == company.Id && g.Name == GameName);
+
+        Scores = ApplicationDbContext.Scores.Where(s => s.GameId == game.Id).GroupBy(s => s.Level).ToArray();
+    }
+
+}

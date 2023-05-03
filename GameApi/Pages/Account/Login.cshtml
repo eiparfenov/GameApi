@@ -1,0 +1,45 @@
+@page "/account/login"
+@using GameApi.Data
+@model GameApi.Pages.Account.Login
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+<div>
+    <h1>Login</h1>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p>You are already logged in.</p>
+    }
+    else
+    {
+        @if (Model.Error != null)
+        {
+            <p>@Model.Error</p>
+        }
+
+        <form method="post">
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="Username"/>
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="Password"/>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div>
+            <p>New user? <a asp-page="/Account/Register">Register here</a>.</p>
+        </div>
+    }
+</div>
+</body>
+</html>

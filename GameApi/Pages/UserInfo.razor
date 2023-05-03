@@ -1,0 +1,30 @@
+@page "/UserInfo/{Login}"
+@using GameApi.Models
+@using GameApi.Data
+@using GameApi.Components
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db;
+@if (Player != null)
+{
+    <Paragraph>Player: @Player.Login</Paragraph>
+    <Paragraph>Staus: @Player.Status</Paragraph>
+    <PlayerResultDisplay></PlayerResultDisplay>    
+}
+else
+{
+    <Paragraph>Can't find player with login @Login</Paragraph>
+}
+
+@code {
+    public Player? Player { get; set; }
+    [FromRoute]
+    public string? Login { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        Player = await Db.Players.FirstOrDefaultAsync(x => x.Login == Login);
+    }
+
+}
+

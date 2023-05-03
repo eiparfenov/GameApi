@@ -1,0 +1,129 @@
+@using Microsoft.EntityFrameworkCore
+@using GameApi.Data
+@using AntDesign.Core.Extensions
+@using GameApi.Models
+@using System.Reflection
+@using Shared
+@typeparam TItem where TItem: class, GameApi.Models.IHasId, new()
+@inject ApplicationDbContext _db
+
+<Panel Header="@typeof(TItem).Name">
+    <Space Direction="DirectionVHType.Vertical">
+        <Space>
+            <Table TItem="TItem" DataSource="@Items">
+                <GenerateColumns Definitions="Definitions"/>
+                <ActionColumn>
+                    <Space>
+                        <SpaceItem>
+                            <Button Danger OnClick="() => OnDelete(context)">Delete</Button>
+                        </SpaceItem>
+                        <SpaceItem>
+                            <Button OnClick="() => OnEditItem(context)">Edit</Button>
+                        </SpaceItem>
+                    </Space>
+                </ActionColumn>
+            </Table>
+        </Space>
+        <Space>
+            <Button OnClick="OnAdd">Add</Button>
+        </Space>
+    </Space>
+    <Drawer Style="position:absolute" Closable Visible="SelectedItem != null" Placement="right" Title='typeof(TItem).Name' OnClose="() => SelectedItem = null">
+        @if (SelectedItem != null)
+        {
+            <Form TModel="TItem" Model="@SelectedItem">
+                @if (IntProperties != null)
+                {
+                    var val = IntProperties.First(x => x.Name == "Id");
+                    <FormItem Label="@val.Name">
+                        <Input Disabled TValue="int" @bind-Value="@val.Value"/>
+                    </FormItem>
+                }
+                @if (StringProperties != null)
+                {
+                    foreach (var val in StringProperties)
+                    {
+                        <FormItem Label="@val.Name">
+                            <Input TValue="string" @bind-Value="@val.Value"/>
+                        </FormItem>
+                    }
+                }
+                @if (IntProperties != null)
+                {
+                    foreach (var val in IntProperties.Where(x => x.Name != "Id"))
+                    {
+                        <FormItem Label="@val.Name">
+                            <Input TValue="int" @bind-Value="@val.Value"/>
+                        </FormItem>
+                    }
+                }
+                <FormItem>
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" OnClick="SaveChanges">Submit</Button>
+                </FormItem>
+            </Form>
+        }
+    </Drawer>
+</Panel>
+@code {
+    [Parameter]
+    public Func<ApplicationDbContext, DbSet<TItem>> GetDbSet { get; set; }
+    [Parameter]
+    public string Key { get; set; }
+
+    public DbSet<TItem>? Items { get; set; }
+    public TItem? SelectedItem { get; set; }
+    public List<PropertyProvider<string>>? StringProperties { get; set; }
+    public List<PropertyProvider<int>>? IntProperties { get; set; }
+    public bool NewItem { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        Items = GetDbSet(_db);
+    }
+
+    private void Definitions(string arg1, object arg2)
+    {
+        arg2.SetValue("Sortable", true);
+        arg2.SetValue("Filterable", true);
+    }
+
+    private async void OnDelete(TItem item)
+    {
+        Items!.Remove(item);
+        await _db.SaveChangesAsync();
+    }
+
+    private void OnEditItem(TItem item)
+    {
+        SelectedItem = item;
+        IntProperties = new List<PropertyProvider<int>>();
+        StringProperties = new List<PropertyProvider<string>>();
+        foreach (var property in typeof(TItem).GetProperties())
+        {
+            if(property.PropertyType == typeof(int))
+                IntProperties.Add(new PropertyProvider<int>(item, property));
+            if(property.PropertyType == typeof(string))
+                StringProperties.Add(new PropertyProvider<string>(item, property));
+        }
+    }
+
+    private async void SaveChanges()
+    {
+        if (NewItem)
+        {
+            await _db.AddAsync(SelectedItem);
+        }
+        await _db.SaveChangesAsync();
+        SelectedItem = null;
+        IntProperties = null;
+        StringProperties = null;
+        NewItem = false;
+    }
+
+    private void OnAdd()
+    {
+        NewItem = true;
+        OnEditItem(new TItem());
+    }
+    
+}
